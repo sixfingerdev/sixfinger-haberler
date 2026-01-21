@@ -11,7 +11,15 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
+
+# Get database URL from environment
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
+
+# SQLAlchemy compatibility: Convert postgres:// to postgresql://
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Warn if using default secret key
@@ -347,16 +355,16 @@ def admin_fetch_news():
 
 # --- Initialize Database ---
 def init_db():
-    with app.app_context():
-        db.create_all()
-        
-        # Create default admin user if not exists
-        if not User.query.filter_by(username='admin').first():
-            admin = User(username='admin', is_admin=True)
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
-            print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
+    """Initialize database tables and create default admin user"""
+    db.create_all()
+    
+    # Create default admin user if not exists
+    if not User.query.filter_by(username='admin').first():
+        admin = User(username='admin', is_admin=True)
+        admin.set_password('admin123')
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
 
 # --- Scheduler ---
 def start_scheduler():
@@ -366,8 +374,16 @@ def start_scheduler():
     scheduler.start()
     print("✅ Zamanlanmış görevler başlatıldı (her saat haber toplanacak)")
 
+# --- Initialize Database on Startup ---
+# This ensures tables are created even when deployed with gunicorn/uvicorn
+try:
+    with app.app_context():
+        init_db()
+except Exception as e:
+    print(f"⚠️  Database initialization warning: {e}")
+    print("   Tables will be created on first request if this is a connection issue.")
+
 if __name__ == '__main__':
-    init_db()
     start_scheduler()
     
     # Get debug mode from environment, default to False for safety
