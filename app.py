@@ -15,7 +15,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-pr
 # Get database URL from environment
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
 
-# Railway fix: Convert postgres:// to postgresql:// for SQLAlchemy compatibility
+# SQLAlchemy compatibility: Convert postgres:// to postgresql://
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
@@ -376,8 +376,12 @@ def start_scheduler():
 
 # --- Initialize Database on Startup ---
 # This ensures tables are created even when deployed with gunicorn/uvicorn
-with app.app_context():
-    init_db()
+try:
+    with app.app_context():
+        init_db()
+except Exception as e:
+    print(f"⚠️  Database initialization warning: {e}")
+    print("   Tables will be created on first request if this is a connection issue.")
 
 if __name__ == '__main__':
     start_scheduler()
