@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Hakkımızda - SixFinger Haberler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white p-5 rounded shadow-sm">
+                <h1 class="mb-4">Hakkımızda</h1>
+                
+                <p class="lead">SixFinger Haberler, yapay zeka destekli tam otomatik haber platformudur.</p>
+                
+                <h3 class="mt-4">Misyonumuz</h3>
+                <p>
+                    En güncel haberleri okuyucularımıza en hızlı şekilde ulaştırmak ve kaliteli içerik sunmaktır.
+                    Yapay zeka teknolojisini kullanarak haberleri özgün bir şekilde yeniden yazıyor ve 
+                    okuyucularımıza sunuyoruz.
+                </p>
+
+                <h3 class="mt-4">Teknoloji</h3>
+                <p>
+                    SixFinger Haberler platformu, Flask web framework'ü üzerine inşa edilmiştir.
+                    Haberler RSS beslemelerinden otomatik olarak toplanır ve yapay zeka ile işlenir.
+                    Her saat başı yeni haberler otomatik olarak sistemimize eklenir.
+                </p>
+
+                <h3 class="mt-4">Kategoriler</h3>
+                <ul>
+                    <li>Gündem</li>
+                    <li>Ekonomi</li>
+                    <li>Spor</li>
+                    <li>Teknoloji</li>
+                    <li>Dünya</li>
+                    <li>Sağlık</li>
+                </ul>
+
+                <hr class="my-4">
+                
+                <p class="text-muted">
+                    <small>Made by SixFingerDev</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

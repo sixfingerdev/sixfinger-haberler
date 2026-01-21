@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}SixFinger Haberler - En Son Haberler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Google AdSense Placeholder - Top Banner -->
+    <div class="ad-container text-center my-4 p-4 bg-light border">
+        <p class="text-muted mb-0">
+            <i class="fas fa-ad"></i> Reklam Alanı (728x90) - Google AdSense
+        </p>
+        <!-- Google AdSense kodu buraya eklenecek -->
+    </div>
+
+    <h2 class="mb-4">
+        <i class="fas fa-fire text-danger"></i> Son Haberler
+    </h2>
+
+    <div class="row">
+        {% for article in articles.items %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm hover-card">
+                {% if article.image_url %}
+                <img src="{{ article.image_url }}" class="card-img-top" alt="{{ article.title }}">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-newspaper fa-3x text-white"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge bg-danger mb-2">{{ article.category }}</span>
+                    <h5 class="card-title">
+                        <a href="{{ url_for('article', slug=article.slug) }}" class="text-dark text-decoration-none">
+                            {{ article.title }}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted small">
+                        <i class="far fa-clock"></i> {{ article.published_date.strftime('%d.%m.%Y %H:%M') }}
+                        <span class="ms-2">
+                            <i class="far fa-eye"></i> {{ article.views }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if articles.pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if articles.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('index', page=articles.prev_num) }}">Önceki</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in articles.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == articles.page %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if articles.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('index', page=articles.next_num) }}">Sonraki</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Google AdSense Placeholder - Bottom Banner -->
+    <div class="ad-container text-center my-4 p-4 bg-light border">
+        <p class="text-muted mb-0">
+            <i class="fas fa-ad"></i> Reklam Alanı (728x90) - Google AdSense
+        </p>
+        <!-- Google AdSense kodu buraya eklenecek -->
+    </div>
+</div>
+{% endblock %}

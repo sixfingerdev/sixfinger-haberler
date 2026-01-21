@@ -1,0 +1,164 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1">Toplam Haber</h6>
+                            <h2 class="mb-0">{{ total_articles }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-newspaper fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1">Yayında</h6>
+                            <h2 class="mb-0">{{ published_articles }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1">Toplam Görüntülenme</h6>
+                            <h2 class="mb-0">{{ total_views }}</h2>
+                        </div>
+                        <div>
+                            <i class="fas fa-eye fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1">Otomatik Toplama</h6>
+                            <h6 class="mb-0">Her Saat</h6>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools"></i> Hızlı İşlemler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin_fetch_news') }}" class="d-inline">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sync-alt"></i> Haberleri Şimdi Topla
+                        </button>
+                    </form>
+                    <a href="{{ url_for('admin_articles') }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-list"></i> Tüm Haberleri Görüntüle
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-info btn-lg" target="_blank">
+                        <i class="fas fa-eye"></i> Siteyi Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Articles -->
+    <div class="row">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i> Son Eklenen Haberler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Kategori</th>
+                                    <th>Tarih</th>
+                                    <th>Görüntülenme</th>
+                                    <th>Durum</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for article in recent_articles %}
+                                <tr>
+                                    <td>{{ article.title[:60] }}...</td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ article.category }}</span>
+                                    </td>
+                                    <td>{{ article.published_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>{{ article.views }}</td>
+                                    <td>
+                                        {% if article.is_published %}
+                                        <span class="badge bg-success">Yayında</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Taslak</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('article', slug=article.slug) }}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin_edit_article', id=article.id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

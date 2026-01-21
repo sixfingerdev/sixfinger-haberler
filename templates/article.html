@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - SixFinger Haberler{% endblock %}
+{% block description %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <article class="bg-white p-4 rounded shadow-sm">
+                <div class="mb-3">
+                    <span class="badge bg-danger">{{ article.category }}</span>
+                    <span class="badge bg-secondary ms-2">
+                        <i class="fas fa-tag"></i> {{ article.source }}
+                    </span>
+                </div>
+
+                <h1 class="mb-3">{{ article.title }}</h1>
+
+                <div class="text-muted mb-4">
+                    <small>
+                        <i class="far fa-clock"></i> {{ article.published_date.strftime('%d.%m.%Y %H:%M') }}
+                        <span class="ms-3">
+                            <i class="far fa-eye"></i> {{ article.views }} Görüntülenme
+                        </span>
+                    </small>
+                </div>
+
+                {% if article.image_url %}
+                <img src="{{ article.image_url }}" class="img-fluid rounded mb-4" alt="{{ article.title }}">
+                {% endif %}
+
+                <div class="article-content">
+                    {{ article.content|safe }}
+                </div>
+
+                <!-- Google AdSense Placeholder - In-Article -->
+                <div class="ad-container text-center my-4 p-4 bg-light border">
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-ad"></i> Reklam Alanı (336x280) - Google AdSense
+                    </p>
+                    <!-- Google AdSense kodu buraya eklenecek -->
+                </div>
+
+                <!-- Social Share Buttons -->
+                <div class="mt-4 pt-4 border-top">
+                    <h5>Bu Haberi Paylaş</h5>
+                    <div class="d-flex gap-2">
+                        <a href="https://twitter.com/intent/tweet?text={{ article.title }}&url={{ request.url }}" 
+                           class="btn btn-outline-primary" target="_blank">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" 
+                           class="btn btn-outline-primary" target="_blank">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        <a href="https://wa.me/?text={{ article.title }} {{ request.url }}" 
+                           class="btn btn-outline-success" target="_blank">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Related News -->
+            {% if related %}
+            <div class="mt-5">
+                <h3 class="mb-4">İlgili Haberler</h3>
+                <div class="row">
+                    {% for rel_article in related %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card shadow-sm hover-card">
+                            <div class="card-body">
+                                <span class="badge bg-danger mb-2">{{ rel_article.category }}</span>
+                                <h6 class="card-title">
+                                    <a href="{{ url_for('article', slug=rel_article.slug) }}" class="text-dark text-decoration-none">
+                                        {{ rel_article.title }}
+                                    </a>
+                                </h6>
+                                <p class="card-text text-muted small">
+                                    <i class="far fa-clock"></i> {{ rel_article.published_date.strftime('%d.%m.%Y') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Google AdSense Placeholder - Sidebar -->
+            <div class="ad-container text-center mb-4 p-4 bg-light border rounded">
+                <p class="text-muted mb-0">
+                    <i class="fas fa-ad"></i> Reklam Alanı (300x600) - Google AdSense
+                </p>
+                <!-- Google AdSense kodu buraya eklenecek -->
+            </div>
+
+            <!-- Popular News Widget -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire"></i> Popüler Haberler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">En çok okunan haberler yakında burada...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
