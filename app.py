@@ -9,6 +9,7 @@ import requests
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
 import markdown2
+from urllib.parse import quote_plus
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
@@ -64,6 +65,75 @@ RSS_FEEDS = {
         {"name": "NTV Sağlık", "url": "https://www.ntv.com.tr/saglik.rss"},
     ]
 }
+
+# Pexels API Configuration
+PEXELS_API_KEY = "WOXtTQSjKDvQZZXnGLCMwk1bJq4qhWzn6goh0QZkEZ27MzieL1kr7gQw"
+
+def get_pexels_thumbnail(query: str, count: int = 1):
+    """
+    Verilen query (haber başlığı) için Pexels'ten thumbnail URL döner.
+    RSS'te görsel yoksa fallback olarak bunu kullan.
+    """
+    if not PEXELS_API_KEY:
+        return None
+    
+    url = "https://api.pexels.com/v1/search"
+    params = {
+        "query": quote_plus(query),
+        "per_page": count,
+        "orientation": "landscape",  # haber kartı için yatay daha iyi
+        "size": "medium",            # orta boy thumbnail (~350-500px)
+        "locale": "tr-TR"            # Türkçe sonuç öncelikli
+    }
+    headers = {
+        "Authorization": PEXELS_API_KEY
+    }
+    
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=5)
+        response.raise_for_status()  # 4xx/5xx patlarsa hata fırlat
+        data = response.json()
+        
+        photos = data.get("photos", [])
+        if not photos:
+            return None
+        
+        # İlk sonucu al (en alakalı)
+        first_photo = photos[0]
+        thumb_url = first_photo["src"].get("medium") or first_photo["src"].get("large")
+        
+        return thumb_url
+    
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 429:
+            print("Rate limit aşıldı — Pexels attribution göstererek limit artırılabilir.")
+        elif response.status_code == 401:
+            print("Geçersiz Pexels key — yeni key al: https://www.pexels.com/api/")
+        else:
+            print(f"Pexels HTTP hatası: {http_err} - {response.text}")
+        return None
+    except Exception as e:
+        print(f"Pexels genel hata: {e}")
+        return None
+
+def get_article_thumbnail(title: str, summary: str = ""):
+    """
+    Haber için thumbnail URL döner.
+    Önce tam başlık, sonra başlık+özet, en son Picsum fallback.
+    """
+    # Önce tam başlık dene
+    thumb = get_pexels_thumbnail(title)
+    
+    # Olmazsa başlık + özet kombinasyonu
+    if not thumb and summary:
+        thumb = get_pexels_thumbnail(title + " " + summary[:80])
+    
+    if thumb:
+        return thumb
+    else:
+        # En son çare deterministic fallback
+        encoded = quote_plus(title[:60])
+        return f"https://picsum.photos/seed/{encoded}/800/600"
 
 # --- Models ---
 class User(UserMixin, db.Model):
@@ -153,7 +223,7 @@ def login_to_api():
         print(f"❌ API giriş hatası: {e}")
         return None
 
-def process_news_with_ai(session, original_title, summary, category, source):
+def process_news_with_ai(session, original_title, summary, category, source, image_url=None):
     """Process news article with AI"""
     prompt = f"""
     Aşağıdaki haberi bir haber editörü gibi, tamamen özgün cümlelerle ve SEO uyumlu olarak yeniden yaz. 
@@ -193,7 +263,8 @@ def process_news_with_ai(session, original_title, summary, category, source):
                 category=category,
                 content=content,
                 slug=slug,
-                source=source
+                source=source,
+                image_url=image_url
             )
             db.session.add(article)
             db.session.commit()
@@ -230,8 +301,29 @@ def fetch_news():
                         print(f"⏭️  Atlanıyor (Mevcut): {title[:40]}...")
                         continue
                     
+                    # RSS'ten görsel çek
+                    image_url = None
+                    
+                    # Önce media content'i kontrol et
+                    if hasattr(entry, 'media_content') and entry.media_content:
+                        image_url = entry.media_content[0].get('url')
+                    # Sonra enclosures kontrol et
+                    elif hasattr(entry, 'enclosures') and entry.enclosures:
+                        for enclosure in entry.enclosures:
+                            if 'image' in enclosure.get('type', ''):
+                                image_url = enclosure.get('href')
+                                break
+                    # Son olarak media_thumbnail kontrol et
+                    elif hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+                        image_url = entry.media_thumbnail[0].get('url')
+                    
+                    # RSS'te görsel yoksa Pexels'ten al
+                    if not image_url:
+                        print(f"📸 RSS'te görsel yok, Pexels'ten çekiliyor...")
+                        image_url = get_article_thumbnail(title, summary)
+                    
                     # AI ile işle ve kaydet
-                    if process_news_with_ai(api_session, title, summary, category, feed_info['name']):
+                    if process_news_with_ai(api_session, title, summary, category, feed_info['name'], image_url):
                         new_articles_count += 1
                     
                     import time
