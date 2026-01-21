@@ -355,16 +355,16 @@ def admin_fetch_news():
 
 # --- Initialize Database ---
 def init_db():
-    with app.app_context():
-        db.create_all()
-        
-        # Create default admin user if not exists
-        if not User.query.filter_by(username='admin').first():
-            admin = User(username='admin', is_admin=True)
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
-            print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
+    """Initialize database tables and create default admin user"""
+    db.create_all()
+    
+    # Create default admin user if not exists
+    if not User.query.filter_by(username='admin').first():
+        admin = User(username='admin', is_admin=True)
+        admin.set_password('admin123')
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
 
 # --- Scheduler ---
 def start_scheduler():
@@ -374,8 +374,12 @@ def start_scheduler():
     scheduler.start()
     print("✅ Zamanlanmış görevler başlatıldı (her saat haber toplanacak)")
 
-if __name__ == '__main__':
+# --- Initialize Database on Startup ---
+# This ensures tables are created even when deployed with gunicorn/uvicorn
+with app.app_context():
     init_db()
+
+if __name__ == '__main__':
     start_scheduler()
     
     # Get debug mode from environment, default to False for safety
