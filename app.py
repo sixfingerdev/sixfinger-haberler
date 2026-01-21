@@ -11,7 +11,15 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
+
+# Get database URL from environment
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
+
+# Railway fix: Convert postgres:// to postgresql:// for SQLAlchemy compatibility
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Warn if using default secret key
