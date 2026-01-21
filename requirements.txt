@@ -7,3 +7,4 @@ APScheduler==3.10.4
 Werkzeug==3.0.1
 gunicorn
 psycopg2-binary==2.9.9
+markdown2==2.4.12

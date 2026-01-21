@@ -8,6 +8,7 @@ import feedparser
 import requests
 import re
 from apscheduler.schedulers.background import BackgroundScheduler
+import markdown2
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
@@ -101,6 +102,14 @@ def load_user(user_id):
 @app.context_processor
 def inject_now():
     return {'now': datetime.now()}
+
+# --- Jinja2 Filters ---
+@app.template_filter('markdown')
+def markdown_filter(text):
+    """Convert markdown to HTML"""
+    if not text:
+        return ''
+    return markdown2.markdown(text, extras=['fenced-code-blocks', 'tables', 'header-ids'])
 
 # --- Helper Functions ---
 def create_slug(title):
@@ -369,10 +378,10 @@ def init_db():
 # --- Scheduler ---
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    # Her saat başı haber topla
-    scheduler.add_job(func=fetch_news, trigger="interval", hours=1)
+    # Her 10 dakikada bir haber topla
+    scheduler.add_job(func=fetch_news, trigger="interval", minutes=10)
     scheduler.start()
-    print("✅ Zamanlanmış görevler başlatıldı (her saat haber toplanacak)")
+    print("✅ Zamanlanmış görevler başlatıldı (her 10 dakikada haber toplanacak)")
 
 # --- Initialize Database on Startup ---
 # This ensures tables are created even when deployed with gunicorn/uvicorn
