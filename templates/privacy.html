@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Gizlilik Politikası - SixFinger Haberler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-4">Gizlilik Politikası</h1>
+            <p class="text-muted">Son güncelleme: {{ now.strftime('%d.%m.%Y') if now else '2024' }}</p>
+            
+            <div class="content-section mt-4">
+                <h2>1. Genel Bakış</h2>
+                <p>
+                    SixFinger Haberler olarak, kullanıcılarımızın gizliliğine önem veriyoruz. 
+                    Bu gizlilik politikası, web sitemizi ziyaret ettiğinizde toplanan bilgilerin nasıl 
+                    kullanıldığını ve korunduğunu açıklamaktadır.
+                </p>
+
+                <h2 class="mt-4">2. Toplanan Bilgiler</h2>
+                <h3>2.1 Otomatik Olarak Toplanan Bilgiler</h3>
+                <p>Web sitemizi ziyaret ettiğinizde, aşağıdaki bilgiler otomatik olarak toplanabilir:</p>
+                <ul>
+                    <li>IP adresi</li>
+                    <li>Tarayıcı türü ve sürümü</li>
+                    <li>İşletim sistemi</li>
+                    <li>Ziyaret edilen sayfalar ve tıklanan bağlantılar</li>
+                    <li>Ziyaret tarihi ve saati</li>
+                    <li>Yönlendiren web sitesi adresi</li>
+                </ul>
+
+                <h3 class="mt-3">2.2 Çerezler (Cookies)</h3>
+                <p>
+                    Web sitemiz, kullanıcı deneyimini iyileştirmek ve site trafiğini analiz etmek için 
+                    çerezler kullanmaktadır. Çerezler, bilgisayarınızda veya mobil cihazınızda saklanan 
+                    küçük metin dosyalarıdır.
+                </p>
+                <p>Kullanılan çerez türleri:</p>
+                <ul>
+                    <li><strong>Zorunlu Çerezler:</strong> Sitenin düzgün çalışması için gereklidir</li>
+                    <li><strong>Analitik Çerezler:</strong> Site trafiğini ve kullanıcı davranışlarını analiz eder</li>
+                    <li><strong>Reklam Çerezleri:</strong> Kişiselleştirilmiş reklamlar göstermek için kullanılır</li>
+                </ul>
+
+                <h2 class="mt-4">3. Google AdSense ve Üçüncü Taraf Reklamlar</h2>
+                <p>
+                    Web sitemiz, Google AdSense ve diğer reklam ağları aracılığıyla reklamlar göstermektedir. 
+                    Bu hizmetler, size daha alakalı reklamlar sunmak için çerezler kullanabilir.
+                </p>
+                <p>
+                    Google, DART çerezini kullanarak bu sitedeki ve internetteki diğer sitelerdeki 
+                    ziyaretlerinize dayalı olarak size reklamlar gösterir. Kullanıcılar, 
+                    <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google Reklam ve İçerik Ağı Gizlilik Politikası</a>'nı 
+                    ziyaret ederek DART çerezinin kullanımını devre dışı bırakabilirler.
+                </p>
+                <p>
+                    Üçüncü taraf satıcılar (Google dahil), çerezleri kullanarak önceki ziyaretlerinize 
+                    dayalı olarak reklamlar gösterir. Google'ın reklam çerezlerini kullanması, 
+                    Google ve iş ortaklarının kullanıcılara bu site ve/veya İnternet'teki diğer 
+                    sitelerdeki ziyaretlerine dayalı olarak reklamlar göstermesini sağlar.
+                </p>
+
+                <h2 class="mt-4">4. Google Analytics</h2>
+                <p>
+                    Web sitemiz, kullanıcı trafiğini analiz etmek için Google Analytics kullanmaktadır. 
+                    Google Analytics, anonim istatistiksel veriler toplar ve raporlar oluşturur. 
+                    Bu veriler, site performansını iyileştirmek ve içerik stratejisi geliştirmek için kullanılır.
+                </p>
+                <p>
+                    Google Analytics'in veri toplama yöntemleri hakkında daha fazla bilgi için 
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Gizlilik Politikası</a>'nı ziyaret edebilirsiniz.
+                </p>
+
+                <h2 class="mt-4">5. Bilgilerin Kullanımı</h2>
+                <p>Toplanan bilgiler aşağıdaki amaçlarla kullanılır:</p>
+                <ul>
+                    <li>Web sitesinin işlevselliğini sağlamak ve iyileştirmek</li>
+                    <li>Kullanıcı deneyimini kişiselleştirmek</li>
+                    <li>Site trafiğini analiz etmek ve raporlamak</li>
+                    <li>İlgili reklamlar göstermek</li>
+                    <li>Yasal yükümlülükleri yerine getirmek</li>
+                </ul>
+
+                <h2 class="mt-4">6. Bilgi Güvenliği</h2>
+                <p>
+                    Kullanıcı verilerinin güvenliğini sağlamak için uygun teknik ve organizasyonel 
+                    önlemler alıyoruz. Ancak, internet üzerinden veri iletiminin tamamen güvenli 
+                    olduğunu garanti edemeyiz.
+                </p>
+
+                <h2 class="mt-4">7. Çocukların Gizliliği</h2>
+                <p>
+                    Web sitemiz 13 yaşın altındaki çocuklara yönelik değildir. Bilerek 13 yaşın 
+                    altındaki çocuklardan kişisel bilgi toplamıyoruz. Eğer bir ebeveyn veya vasi 
+                    olarak çocuğunuzun bize kişisel bilgi sağladığını fark ederseniz, lütfen 
+                    bizimle iletişime geçin.
+                </p>
+
+                <h2 class="mt-4">8. Üçüncü Taraf Bağlantılar</h2>
+                <p>
+                    Web sitemiz, üçüncü taraf web sitelerine bağlantılar içerebilir. 
+                    Bu sitelerin gizlilik politikalarından sorumlu değiliz. 
+                    Bu bağlantılara tıkladığınızda, ilgili sitenin gizlilik politikasını 
+                    incelemenizi öneririz.
+                </p>
+
+                <h2 class="mt-4">9. Çerez Tercihlerinizi Yönetme</h2>
+                <p>
+                    Tarayıcınızın ayarlarından çerezleri yönetebilir veya reddedebilirsiniz. 
+                    Ancak, çerezleri devre dışı bırakmanız durumunda site işlevselliğinin 
+                    bazı bölümleri düzgün çalışmayabilir.
+                </p>
+                <p>Çerezleri yönetme hakkında daha fazla bilgi için:</p>
+                <ul>
+                    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Google Chrome</a></li>
+                    <li><a href="https://support.mozilla.org/tr/kb/cerezleri-silme-web-sitelerinin-bilgisayarinizda" target="_blank" rel="noopener">Mozilla Firefox</a></li>
+                    <li><a href="https://support.microsoft.com/tr-tr/windows/microsoft-edge-tarama-verilerini-silme-00cf7943-a9e1-975a-a33d-ac10ce454ca4" target="_blank" rel="noopener">Microsoft Edge</a></li>
+                    <li><a href="https://support.apple.com/tr-tr/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a></li>
+                </ul>
+
+                <h2 class="mt-4">10. Kişiselleştirilmiş Reklamlardan Çıkma</h2>
+                <p>
+                    Kişiselleştirilmiş reklamlardan çıkmak için aşağıdaki kaynakları kullanabilirsiniz:
+                </p>
+                <ul>
+                    <li><a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Reklam Ayarları</a></li>
+                    <li><a href="http://www.aboutads.info/choices/" target="_blank" rel="noopener">Digital Advertising Alliance</a></li>
+                    <li><a href="http://www.youronlinechoices.eu/" target="_blank" rel="noopener">Your Online Choices (Avrupa)</a></li>
+                </ul>
+
+                <h2 class="mt-4">11. KVKK ve GDPR Uyumluluğu</h2>
+                <p>
+                    Web sitemiz, Türkiye'de 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) 
+                    ve AB Genel Veri Koruma Yönetmeliği (GDPR) gerekliliklerine uygun olarak 
+                    kişisel verileri işlemektedir.
+                </p>
+                <p>Haklarınız:</p>
+                <ul>
+                    <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                    <li>Kişisel verileriniz işlenmişse buna ilişkin bilgi talep etme</li>
+                    <li>Kişisel verilerinizin işlenme amacını öğrenme</li>
+                    <li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması halinde düzeltilmesini isteme</li>
+                    <li>Kişisel verilerinizin silinmesini veya yok edilmesini isteme</li>
+                </ul>
+
+                <h2 class="mt-4">12. Gizlilik Politikası Değişiklikleri</h2>
+                <p>
+                    Bu gizlilik politikasını zaman zaman güncelleyebiliriz. 
+                    Önemli değişiklikler yapıldığında, bu sayfada bildirim yapılacaktır. 
+                    Gizlilik politikasındaki değişikliklerden haberdar olmak için bu sayfayı 
+                    düzenli olarak kontrol etmenizi öneririz.
+                </p>
+
+                <h2 class="mt-4">13. İletişim</h2>
+                <p>
+                    Gizlilik politikamız hakkında sorularınız veya endişeleriniz varsa, 
+                    lütfen bizimle iletişime geçin:
+                </p>
+                <ul>
+                    <li><strong>E-posta:</strong> info@sixfinger.live</li>
+                    <li><strong>Web sitesi:</strong> <a href="{{ url_for('contact') }}">İletişim Sayfası</a></li>
+                </ul>
+
+                <div class="alert alert-info mt-5">
+                    <h5><i class="fas fa-info-circle"></i> Önemli Not</h5>
+                    <p class="mb-0">
+                        Bu web sitesini kullanarak, bu gizlilik politikasında açıklanan 
+                        koşulları kabul etmiş olursunuz. Gizlilik politikamızı kabul etmiyorsanız, 
+                        lütfen web sitemizi kullanmayın.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.content-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.content-section h2 {
+    color: #dc3545;
+    margin-top: 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+.content-section h3 {
+    color: #343a40;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+.content-section p, .content-section li {
+    line-height: 1.8;
+    color: #495057;
+}
+.content-section a {
+    color: #dc3545;
+    text-decoration: underline;
+}
+.content-section a:hover {
+    color: #c82333;
+}
+</style>
+{% endblock %}

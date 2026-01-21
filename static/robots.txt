@@ -1,0 +1,26 @@
+# robots.txt for SixFinger Haberler
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://sixfinger-haberler.com/sitemap.xml
+
+# Admin area - disallow
+Disallow: /admin/
+Disallow: /admin/login
+
+# Static files - allow
+Allow: /static/
+
+# Allow all categories and articles
+Allow: /kategori/
+Allow: /haber/
+
+# Allow pages
+Allow: /hakkimizda
+Allow: /iletisim
+Allow: /gizlilik-politikasi
+
+# Crawl-delay for polite crawling (optional)
+Crawl-delay: 1
