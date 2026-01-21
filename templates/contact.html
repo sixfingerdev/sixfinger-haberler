@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}İletişim - SixFinger Haberler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white p-5 rounded shadow-sm">
+                <h1 class="mb-4">İletişim</h1>
+                
+                <p class="lead">Bizimle iletişime geçmek için aşağıdaki bilgileri kullanabilirsiniz.</p>
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-envelope text-danger"></i> E-posta
+                        </h5>
+                        <p class="card-text">
+                            <a href="mailto:info@sixfinger.live">info@sixfinger.live</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-globe text-danger"></i> Web Sitesi
+                        </h5>
+                        <p class="card-text">
+                            <a href="https://sixfinger.live" target="_blank">https://sixfinger.live</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-code text-danger"></i> Geliştirici
+                        </h5>
+                        <p class="card-text">SixFingerDev</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Haber içerikleri ile ilgili sorularınız için lütfen bizimle iletişime geçin.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

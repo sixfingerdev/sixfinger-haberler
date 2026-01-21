@@ -1,0 +1,110 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Haberler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="fas fa-newspaper"></i> Tüm Haberler
+            </h2>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Kaynak</th>
+                            <th>Tarih</th>
+                            <th>Görüntülenme</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for article in articles.items %}
+                        <tr>
+                            <td>{{ article.id }}</td>
+                            <td>{{ article.title[:50] }}...</td>
+                            <td>
+                                <span class="badge bg-danger">{{ article.category }}</span>
+                            </td>
+                            <td>{{ article.source }}</td>
+                            <td>{{ article.published_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>{{ article.views }}</td>
+                            <td>
+                                {% if article.is_published %}
+                                <span class="badge bg-success">Yayında</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Taslak</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('article', slug=article.slug) }}" 
+                                   class="btn btn-sm btn-info" target="_blank" title="Görüntüle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin_edit_article', id=article.id) }}" 
+                                   class="btn btn-sm btn-warning" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('admin_delete_article', id=article.id) }}" 
+                                      class="d-inline" onsubmit="return confirm('Bu haberi silmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if articles.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if articles.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_articles', page=articles.prev_num) }}">Önceki</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in articles.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == articles.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_articles', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if articles.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_articles', page=articles.next_num) }}">Sonraki</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
