@@ -16,3 +16,5 @@ ENV/
 haberler.db
 otomatik_haberler/
 test_app.py
+test_pexels.py
+add_test_articles.py
