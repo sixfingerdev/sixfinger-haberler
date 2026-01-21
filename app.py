@@ -10,9 +10,13 @@ import re
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sixfinger-dev-secret-key-2024')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///haberler.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Warn if using default secret key
+if app.config['SECRET_KEY'] == 'dev-key-change-in-production':
+    print("⚠️  WARNING: Using default SECRET_KEY. Set SECRET_KEY environment variable in production!")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -25,8 +29,8 @@ STREAM_URL = f"{BASE_URL}/stream"
 MODEL = "qwen3-32b"
 
 API_CREDENTIALS = {
-    "kullanici_adi": os.environ.get('API_USERNAME', 'admin'),
-    "sifre": os.environ.get('API_PASSWORD', '596516Enes')
+    "kullanici_adi": os.environ.get('API_USERNAME'),
+    "sifre": os.environ.get('API_PASSWORD')
 }
 
 # RSS Kaynakları
@@ -115,6 +119,11 @@ def article_exists(original_title):
 
 def login_to_api():
     """Login to SixFinger API"""
+    # Check if API credentials are set
+    if not API_CREDENTIALS.get('kullanici_adi') or not API_CREDENTIALS.get('sifre'):
+        print("❌ API credentials not set. Please set API_USERNAME and API_PASSWORD environment variables.")
+        return None
+    
     try:
         session = requests.Session()
         r = session.post(LOGIN_URL, data=API_CREDENTIALS, timeout=15)
@@ -360,4 +369,7 @@ def start_scheduler():
 if __name__ == '__main__':
     init_db()
     start_scheduler()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Get debug mode from environment, default to False for safety
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
