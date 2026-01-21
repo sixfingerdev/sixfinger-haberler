@@ -4,7 +4,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://sixfinger-haberler.com/sitemap.xml
+Sitemap: https://haberler.sixfinger.live/sitemap.xml
 
 # Admin area - disallow
 Disallow: /admin/
