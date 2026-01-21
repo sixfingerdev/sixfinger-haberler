@@ -7,6 +7,7 @@ from datetime import datetime
 import feedparser
 import requests
 import re
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import markdown2
 from urllib.parse import quote_plus
@@ -105,12 +106,14 @@ def get_pexels_thumbnail(query: str, count: int = 1):
         return thumb_url
     
     except requests.exceptions.HTTPError as http_err:
-        if response.status_code == 429:
+        # Extract status code from exception
+        status_code = http_err.response.status_code if hasattr(http_err, 'response') else None
+        if status_code == 429:
             print("Rate limit aşıldı — Pexels attribution göstererek limit artırılabilir.")
-        elif response.status_code == 401:
+        elif status_code == 401:
             print("Geçersiz Pexels key — yeni key al: https://www.pexels.com/api/")
         else:
-            print(f"Pexels HTTP hatası: {http_err} - {response.text}")
+            print(f"Pexels HTTP hatası: {http_err}")
         return None
     except Exception as e:
         print(f"Pexels genel hata: {e}")
@@ -326,7 +329,6 @@ def fetch_news():
                     if process_news_with_ai(api_session, title, summary, category, feed_info['name'], image_url):
                         new_articles_count += 1
                     
-                    import time
                     time.sleep(2)  # API kotası için mola
             except Exception as e:
                 print(f"❌ Feed okuma hatası ({feed_info['name']}): {e}")
