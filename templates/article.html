@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}{{ article.title }} - SixFinger Haberler{% endblock %}
-{% block description %}{{ article.title }}{% endblock %}
+{% block description %}{{ article.title }} - {{ article.category }} kategorisindeki güncel haber{% endblock %}
+{% block keywords %}{{ article.title }}, {{ article.category }}, haberler, son dakika{% endblock %}
+
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ article.title }}{% endblock %}
+{% block og_description %}{{ article.title }} - {{ article.category }} kategorisindeki güncel haber{% endblock %}
+{% block og_image %}{% if article.image_url %}{{ article.image_url }}{% else %}{{ url_for('static', filename='images/logo-og.png', _external=True) }}{% endif %}{% endblock %}
+
+{% block twitter_title %}{{ article.title }}{% endblock %}
+{% block twitter_description %}{{ article.title }} - {{ article.category }} kategorisindeki güncel haber{% endblock %}
+{% block twitter_image %}{% if article.image_url %}{{ article.image_url }}{% else %}{{ url_for('static', filename='images/logo-og.png', _external=True) }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container">

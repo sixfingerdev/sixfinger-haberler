@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, flash, request, session as flask_session
+from flask import Flask, render_template, redirect, url_for, flash, request, session as flask_session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -375,6 +375,64 @@ def about():
 def contact():
     categories = list(RSS_FEEDS.keys())
     return render_template('contact.html', categories=categories)
+
+@app.route('/gizlilik-politikasi')
+def privacy_policy():
+    categories = list(RSS_FEEDS.keys())
+    return render_template('privacy.html', categories=categories)
+
+@app.route('/ads.txt')
+def ads_txt():
+    """Serve ads.txt file for AdSense verification"""
+    return app.send_static_file('ads.txt')
+
+@app.route('/robots.txt')
+def robots_txt():
+    """Serve robots.txt file for search engines"""
+    return app.send_static_file('robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Generate dynamic sitemap for search engines"""
+    # Get all published articles
+    articles = Article.query.filter_by(is_published=True).order_by(Article.published_date.desc()).all()
+    
+    # Helper function to create URL
+    def add_url(loc, changefreq, priority, lastmod=None):
+        url_parts = ['<url>']
+        url_parts.append(f'<loc>{request.url_root.rstrip("/")}{loc}</loc>')
+        if lastmod:
+            url_parts.append(f'<lastmod>{lastmod}</lastmod>')
+        url_parts.append(f'<changefreq>{changefreq}</changefreq>')
+        url_parts.append(f'<priority>{priority}</priority>')
+        url_parts.append('</url>')
+        return '\n'.join(url_parts)
+    
+    # Build sitemap XML
+    sitemap_xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    sitemap_xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # Homepage
+    sitemap_xml.append(add_url('/', 'daily', '1.0'))
+    
+    # Static pages
+    for route in ['/hakkimizda', '/iletisim', '/gizlilik-politikasi']:
+        sitemap_xml.append(add_url(route, 'monthly', '0.8'))
+    
+    # Categories
+    for category in RSS_FEEDS.keys():
+        sitemap_xml.append(add_url(f'/kategori/{category}', 'daily', '0.9'))
+    
+    # Articles
+    for article in articles:
+        lastmod = article.published_date.strftime("%Y-%m-%d")
+        sitemap_xml.append(add_url(f'/haber/{article.slug}', 'weekly', '0.7', lastmod))
+    
+    sitemap_xml.append('</urlset>')
+    
+    response = make_response('\n'.join(sitemap_xml))
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 # --- Admin Routes ---
 @app.route('/admin/login', methods=['GET', 'POST'])

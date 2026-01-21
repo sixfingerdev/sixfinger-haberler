@@ -1,0 +1,18 @@
+# ads.txt for SixFinger Haberler
+# Bu dosya Google AdSense ve diğer reklam ağları tarafından kullanılır
+# Güvenli reklam gösterimi için publisher bilgilerini doğrular
+
+# Google AdSense - Kendi publisher ID'nizi buraya ekleyin
+# Format: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+
+# Diğer reklam ağları buraya eklenebilir
+# Her satır şu formatı takip etmelidir:
+# <reklam_agi_domain>, <publisher_id>, <ilişki_türü>, <TAG-ID>
+
+# Örnek:
+# google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
+# doubleclick.net, 1234567890, DIRECT, f08c47fec0942fa0
+
+# Not: Bu dosya publish edilmeden önce gerçek publisher ID'lerinizle güncellenmelidir
+# AdSense hesabınızı oluşturduktan sonra, publisher ID'nizi buraya ekleyin
