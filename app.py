@@ -544,9 +544,11 @@ except Exception as e:
     print(f"⚠️  Database initialization warning: {e}")
     print("   Tables will be created on first request if this is a connection issue.")
 
+# Start scheduler when app is loaded (works with both Flask dev server and gunicorn)
+# This ensures automatic news fetching works on production deployments like Railway
+start_scheduler()
+
 if __name__ == '__main__':
-    start_scheduler()
-    
     # Get debug mode from environment, default to False for safety
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     app.run(debug=debug_mode, host='0.0.0.0', port=5000)
