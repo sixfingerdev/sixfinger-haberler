@@ -208,6 +208,42 @@ def article_exists(original_title):
     """Check if article already exists"""
     return Article.query.filter_by(original_title=original_title).first() is not None
 
+def extract_first_heading(content):
+    """Extract the first heading (# or ##) from markdown content"""
+    if not content:
+        return None
+    
+    lines = content.strip().split('\n')
+    for line in lines:
+        line = line.strip()
+        if line.startswith('##'):
+            # Remove ## and strip whitespace
+            return line.lstrip('#').strip()
+        elif line.startswith('#'):
+            # Remove # and strip whitespace
+            return line.lstrip('#').strip()
+    
+    return None
+
+def remove_first_heading(content):
+    """Remove the first heading (# or ##) from markdown content"""
+    if not content:
+        return content
+    
+    lines = content.strip().split('\n')
+    result_lines = []
+    heading_removed = False
+    
+    for line in lines:
+        stripped = line.strip()
+        # Skip the first heading we encounter
+        if not heading_removed and (stripped.startswith('#')):
+            heading_removed = True
+            continue
+        result_lines.append(line)
+    
+    return '\n'.join(result_lines).strip()
+
 def login_to_api():
     """Login to SixFinger API"""
     # Check if API credentials are set
@@ -251,8 +287,20 @@ def process_news_with_ai(session, original_title, summary, category, source, ima
                     content += clean_text
         
         if content:
+            # Extract title from the API response (first # or ## heading)
+            api_title = extract_first_heading(content)
+            
+            # If we found a heading in the API response, use it as title
+            if api_title:
+                title = api_title
+                # Remove the first heading from content
+                content = remove_first_heading(content)
+            else:
+                # Fallback to original title if no heading found
+                title = original_title
+            
             # Create article in database
-            slug = create_slug(original_title)
+            slug = create_slug(title)
             
             # Ensure unique slug
             base_slug = slug
@@ -262,7 +310,7 @@ def process_news_with_ai(session, original_title, summary, category, source, ima
                 counter += 1
             
             article = Article(
-                title=original_title,
+                title=title,
                 original_title=original_title,
                 category=category,
                 content=content,
@@ -530,6 +578,62 @@ def init_db():
         db.session.commit()
         print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
 
+def migrate_existing_articles():
+    """Migrate existing articles to use API-generated titles from content"""
+    print("🔄 Mevcut haberlerin başlıkları güncelleniyor...")
+    
+    try:
+        # Process articles in batches to avoid memory issues with large databases
+        batch_size = 100
+        offset = 0
+        total_updated = 0
+        
+        while True:
+            # Get a batch of articles
+            articles = Article.query.limit(batch_size).offset(offset).all()
+            
+            if not articles:
+                break
+            
+            batch_updated = 0
+            for article in articles:
+                # Try to extract title from content
+                api_title = extract_first_heading(article.content)
+                
+                if api_title and api_title != article.title:
+                    # Update title and remove heading from content
+                    article.title = api_title
+                    article.content = remove_first_heading(article.content)
+                    
+                    # Update slug based on new title
+                    new_slug = create_slug(api_title)
+                    
+                    # Ensure unique slug
+                    base_slug = new_slug
+                    counter = 1
+                    while Article.query.filter(Article.slug == new_slug, Article.id != article.id).first():
+                        new_slug = f"{base_slug}-{counter}"
+                        counter += 1
+                    
+                    article.slug = new_slug
+                    batch_updated += 1
+            
+            if batch_updated > 0:
+                db.session.commit()
+                total_updated += batch_updated
+                print(f"  Batch processed: {batch_updated} articles updated")
+            
+            offset += batch_size
+        
+        if total_updated > 0:
+            print(f"✅ {total_updated} haberin başlığı güncellendi")
+        else:
+            print("ℹ️  Güncellenecek haber bulunamadı")
+            
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Haber güncelleme hatası: {e}")
+
 # --- Scheduler ---
 _scheduler = None
 _shutdown_registered = False
@@ -572,6 +676,8 @@ def start_scheduler():
 try:
     with app.app_context():
         init_db()
+        # Migrate existing articles to use API-generated titles
+        migrate_existing_articles()
 except Exception as e:
     print(f"⚠️  Database initialization warning: {e}")
     print("   Tables will be created on first request if this is a connection issue.")
