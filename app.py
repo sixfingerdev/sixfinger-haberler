@@ -532,6 +532,7 @@ def init_db():
 
 # --- Scheduler ---
 _scheduler = None
+_shutdown_registered = False
 
 def shutdown_scheduler():
     """Gracefully shutdown the scheduler on application exit"""
@@ -543,7 +544,7 @@ def shutdown_scheduler():
 
 def start_scheduler():
     """Start the background scheduler for automatic news fetching"""
-    global _scheduler
+    global _scheduler, _shutdown_registered
     
     # Check if scheduler exists and is running
     if _scheduler is not None:
@@ -561,8 +562,10 @@ def start_scheduler():
     _scheduler.start()
     print("✅ Zamanlanmış görevler başlatıldı (her 10 dakikada haber toplanacak)")
     
-    # Register cleanup handler
-    atexit.register(shutdown_scheduler)
+    # Register cleanup handler only once
+    if not _shutdown_registered:
+        atexit.register(shutdown_scheduler)
+        _shutdown_registered = True
 
 # --- Initialize Database on Startup ---
 # This ensures tables are created even when deployed with gunicorn/uvicorn
@@ -575,6 +578,8 @@ except Exception as e:
 
 # Start scheduler when app is loaded (works with both Flask dev server and gunicorn)
 # This ensures automatic news fetching works on production deployments like Railway
+# NOTE: For multi-worker deployments, use --workers 1 to ensure only one scheduler instance runs
+# See railway.json for the recommended single-worker configuration
 start_scheduler()
 
 if __name__ == '__main__':
