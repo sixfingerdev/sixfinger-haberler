@@ -11,6 +11,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import markdown2
 from urllib.parse import quote_plus
+import atexit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
@@ -532,20 +533,36 @@ def init_db():
 # --- Scheduler ---
 _scheduler = None
 
+def shutdown_scheduler():
+    """Gracefully shutdown the scheduler on application exit"""
+    global _scheduler
+    if _scheduler is not None and _scheduler.running:
+        print("🛑 Zamanlanmış görevler kapatılıyor...")
+        _scheduler.shutdown(wait=False)
+        print("✅ Zamanlanmış görevler kapatıldı")
+
 def start_scheduler():
     """Start the background scheduler for automatic news fetching"""
     global _scheduler
     
-    # Prevent duplicate scheduler creation
+    # Check if scheduler exists and is running
     if _scheduler is not None:
-        print("⚠️  Scheduler already running, skipping initialization")
-        return
+        if _scheduler.running:
+            print("⚠️  Scheduler already running, skipping initialization")
+            return
+        else:
+            # Scheduler exists but not running, clean it up
+            print("⚠️  Found stopped scheduler, reinitializing...")
+            _scheduler = None
     
     _scheduler = BackgroundScheduler()
     # Her 10 dakikada bir haber topla
     _scheduler.add_job(func=fetch_news, trigger="interval", minutes=10)
     _scheduler.start()
     print("✅ Zamanlanmış görevler başlatıldı (her 10 dakikada haber toplanacak)")
+    
+    # Register cleanup handler
+    atexit.register(shutdown_scheduler)
 
 # --- Initialize Database on Startup ---
 # This ensures tables are created even when deployed with gunicorn/uvicorn
