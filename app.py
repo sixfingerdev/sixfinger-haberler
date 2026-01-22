@@ -11,6 +11,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import markdown2
 from urllib.parse import quote_plus
+import atexit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
@@ -281,59 +282,61 @@ def fetch_news():
     """Fetch news from RSS feeds and process with AI"""
     print("📡 Haber toplama işlemi başlıyor...")
     
-    api_session = login_to_api()
-    if not api_session:
-        print("❌ API oturumu açılamadı, haber toplama iptal edildi")
-        return
-    
-    new_articles_count = 0
-    
-    for category, feeds in RSS_FEEDS.items():
-        for feed_info in feeds:
-            print(f"\n📡 {feed_info['name']} kaynağından haberler çekiliyor...")
-            try:
-                feed = feedparser.parse(feed_info['url'])
-                
-                # Her kaynaktan en güncel 3 haberi al
-                for entry in feed.entries[:3]:
-                    title = entry.get('title', 'Başlık yok')
-                    summary = entry.get('summary', entry.get('description', 'Özet yok'))
+    # Ensure we have app context for database operations
+    with app.app_context():
+        api_session = login_to_api()
+        if not api_session:
+            print("❌ API oturumu açılamadı, haber toplama iptal edildi")
+            return
+        
+        new_articles_count = 0
+        
+        for category, feeds in RSS_FEEDS.items():
+            for feed_info in feeds:
+                print(f"\n📡 {feed_info['name']} kaynağından haberler çekiliyor...")
+                try:
+                    feed = feedparser.parse(feed_info['url'])
                     
-                    # Daha önce işlenmiş mi kontrol et
-                    if article_exists(title):
-                        print(f"⏭️  Atlanıyor (Mevcut): {title[:40]}...")
-                        continue
-                    
-                    # RSS'ten görsel çek
-                    image_url = None
-                    
-                    # Önce media content'i kontrol et
-                    if hasattr(entry, 'media_content') and entry.media_content:
-                        image_url = entry.media_content[0].get('url')
-                    # Sonra enclosures kontrol et
-                    elif hasattr(entry, 'enclosures') and entry.enclosures:
-                        for enclosure in entry.enclosures:
-                            if 'image' in enclosure.get('type', ''):
-                                image_url = enclosure.get('href')
-                                break
-                    # Son olarak media_thumbnail kontrol et
-                    elif hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
-                        image_url = entry.media_thumbnail[0].get('url')
-                    
-                    # RSS'te görsel yoksa Pexels'ten al
-                    if not image_url:
-                        print(f"📸 RSS'te görsel yok, Pexels'ten çekiliyor...")
-                        image_url = get_article_thumbnail(title, summary)
-                    
-                    # AI ile işle ve kaydet
-                    if process_news_with_ai(api_session, title, summary, category, feed_info['name'], image_url):
-                        new_articles_count += 1
-                    
-                    time.sleep(2)  # API kotası için mola
-            except Exception as e:
-                print(f"❌ Feed okuma hatası ({feed_info['name']}): {e}")
-    
-    print(f"\n🎯 Toplam {new_articles_count} yeni haber eklendi")
+                    # Her kaynaktan en güncel 3 haberi al
+                    for entry in feed.entries[:3]:
+                        title = entry.get('title', 'Başlık yok')
+                        summary = entry.get('summary', entry.get('description', 'Özet yok'))
+                        
+                        # Daha önce işlenmiş mi kontrol et
+                        if article_exists(title):
+                            print(f"⏭️  Atlanıyor (Mevcut): {title[:40]}...")
+                            continue
+                        
+                        # RSS'ten görsel çek
+                        image_url = None
+                        
+                        # Önce media content'i kontrol et
+                        if hasattr(entry, 'media_content') and entry.media_content:
+                            image_url = entry.media_content[0].get('url')
+                        # Sonra enclosures kontrol et
+                        elif hasattr(entry, 'enclosures') and entry.enclosures:
+                            for enclosure in entry.enclosures:
+                                if 'image' in enclosure.get('type', ''):
+                                    image_url = enclosure.get('href')
+                                    break
+                        # Son olarak media_thumbnail kontrol et
+                        elif hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+                            image_url = entry.media_thumbnail[0].get('url')
+                        
+                        # RSS'te görsel yoksa Pexels'ten al
+                        if not image_url:
+                            print(f"📸 RSS'te görsel yok, Pexels'ten çekiliyor...")
+                            image_url = get_article_thumbnail(title, summary)
+                        
+                        # AI ile işle ve kaydet
+                        if process_news_with_ai(api_session, title, summary, category, feed_info['name'], image_url):
+                            new_articles_count += 1
+                        
+                        time.sleep(2)  # API kotası için mola
+                except Exception as e:
+                    print(f"❌ Feed okuma hatası ({feed_info['name']}): {e}")
+        
+        print(f"\n🎯 Toplam {new_articles_count} yeni haber eklendi")
 
 # --- Routes ---
 @app.route('/')
@@ -528,12 +531,41 @@ def init_db():
         print("✅ Admin kullanıcısı oluşturuldu (admin/admin123)")
 
 # --- Scheduler ---
+_scheduler = None
+_shutdown_registered = False
+
+def shutdown_scheduler():
+    """Gracefully shutdown the scheduler on application exit"""
+    global _scheduler
+    if _scheduler is not None and _scheduler.running:
+        print("🛑 Zamanlanmış görevler kapatılıyor...")
+        _scheduler.shutdown(wait=False)
+        print("✅ Zamanlanmış görevler kapatıldı")
+
 def start_scheduler():
-    scheduler = BackgroundScheduler()
+    """Start the background scheduler for automatic news fetching"""
+    global _scheduler, _shutdown_registered
+    
+    # Check if scheduler exists and is running
+    if _scheduler is not None:
+        if _scheduler.running:
+            print("⚠️  Scheduler already running, skipping initialization")
+            return
+        else:
+            # Scheduler exists but not running, clean it up
+            print("⚠️  Found stopped scheduler, reinitializing...")
+            _scheduler = None
+    
+    _scheduler = BackgroundScheduler()
     # Her 10 dakikada bir haber topla
-    scheduler.add_job(func=fetch_news, trigger="interval", minutes=10)
-    scheduler.start()
+    _scheduler.add_job(func=fetch_news, trigger="interval", minutes=10)
+    _scheduler.start()
     print("✅ Zamanlanmış görevler başlatıldı (her 10 dakikada haber toplanacak)")
+    
+    # Register cleanup handler only once
+    if not _shutdown_registered:
+        atexit.register(shutdown_scheduler)
+        _shutdown_registered = True
 
 # --- Initialize Database on Startup ---
 # This ensures tables are created even when deployed with gunicorn/uvicorn
@@ -544,9 +576,13 @@ except Exception as e:
     print(f"⚠️  Database initialization warning: {e}")
     print("   Tables will be created on first request if this is a connection issue.")
 
+# Start scheduler when app is loaded (works with both Flask dev server and gunicorn)
+# This ensures automatic news fetching works on production deployments like Railway
+# NOTE: For multi-worker deployments, use --workers 1 to ensure only one scheduler instance runs
+# See railway.json for the recommended single-worker configuration
+start_scheduler()
+
 if __name__ == '__main__':
-    start_scheduler()
-    
     # Get debug mode from environment, default to False for safety
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     app.run(debug=debug_mode, host='0.0.0.0', port=5000)
