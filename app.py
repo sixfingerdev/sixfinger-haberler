@@ -583,35 +583,50 @@ def migrate_existing_articles():
     print("🔄 Mevcut haberlerin başlıkları güncelleniyor...")
     
     try:
-        # Get all articles
-        articles = Article.query.all()
-        updated_count = 0
+        # Process articles in batches to avoid memory issues with large databases
+        batch_size = 100
+        offset = 0
+        total_updated = 0
         
-        for article in articles:
-            # Try to extract title from content
-            api_title = extract_first_heading(article.content)
+        while True:
+            # Get a batch of articles
+            articles = Article.query.limit(batch_size).offset(offset).all()
             
-            if api_title and api_title != article.title:
-                # Update title and remove heading from content
-                article.title = api_title
-                article.content = remove_first_heading(article.content)
+            if not articles:
+                break
+            
+            batch_updated = 0
+            for article in articles:
+                # Try to extract title from content
+                api_title = extract_first_heading(article.content)
                 
-                # Update slug based on new title
-                new_slug = create_slug(api_title)
-                
-                # Ensure unique slug
-                base_slug = new_slug
-                counter = 1
-                while Article.query.filter(Article.slug == new_slug, Article.id != article.id).first():
-                    new_slug = f"{base_slug}-{counter}"
-                    counter += 1
-                
-                article.slug = new_slug
-                updated_count += 1
+                if api_title and api_title != article.title:
+                    # Update title and remove heading from content
+                    article.title = api_title
+                    article.content = remove_first_heading(article.content)
+                    
+                    # Update slug based on new title
+                    new_slug = create_slug(api_title)
+                    
+                    # Ensure unique slug
+                    base_slug = new_slug
+                    counter = 1
+                    while Article.query.filter(Article.slug == new_slug, Article.id != article.id).first():
+                        new_slug = f"{base_slug}-{counter}"
+                        counter += 1
+                    
+                    article.slug = new_slug
+                    batch_updated += 1
+            
+            if batch_updated > 0:
+                db.session.commit()
+                total_updated += batch_updated
+                print(f"  Batch processed: {batch_updated} articles updated")
+            
+            offset += batch_size
         
-        if updated_count > 0:
-            db.session.commit()
-            print(f"✅ {updated_count} haberin başlığı güncellendi")
+        if total_updated > 0:
+            print(f"✅ {total_updated} haberin başlığı güncellendi")
         else:
             print("ℹ️  Güncellenecek haber bulunamadı")
             
